@@ -11,7 +11,7 @@ export default {
     host: '0.0.0.0',
   },
   publicRuntimeConfig: {
-    migasfreeServer: process.env.MIGASFREE_SERVER || 'http://localhost'
+    migasfreeServer: process.env.MIGASFREE_SERVER || 'http://localhost',
   },
   /*
    ** Nuxt target
@@ -48,6 +48,7 @@ export default {
     { src: '~/plugins/axios', ssr: false },
     { src: '~/plugins/vue-good-table', ssr: false },
     { src: '~/plugins/vuetify', ssr: false },
+    { src: '~/plugins/vue-echarts.js', ssr: false },
   ],
   /*
    ** Auto import components
@@ -79,7 +80,7 @@ export default {
    ** See https://axios.nuxtjs.org/options
    */
   axios: {
-    baseURL: process.env.MIGASFREE_SERVER || 'http://localhost'
+    baseURL: process.env.MIGASFREE_SERVER || 'http://localhost',
   },
   i18n: {
     locales: [
@@ -154,5 +155,7 @@ export default {
    ** Build configuration
    ** See https://nuxtjs.org/api/configuration-build/
    */
-  build: {},
+  build: {
+    transpile: ['vue-echarts', 'resize-detector'],
+  },
 }
