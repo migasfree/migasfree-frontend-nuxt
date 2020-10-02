@@ -1,45 +1,56 @@
 <template>
   <v-container>
-    <h1>Prueba eCharts</h1>
-    <v-chart :options="options" />
+    <v-breadcrumbs large :items="breadcrumbs"></v-breadcrumbs>
+
+    <h2 class="display-2">Ordenadores</h2>
+
+    <v-chart :options="options" @click="goTo" />
   </v-container>
 </template>
 
 <script>
 import 'echarts/lib/chart/pie'
+import 'echarts/lib/component/title'
+import 'echarts/lib/component/legend'
+import 'echarts/lib/component/tooltip'
 
 export default {
   data() {
     return {
-      data: [],
+      breadcrumbs: [
+        {
+          text: 'Dashboard',
+          disabled: false,
+          href: '/',
+        },
+        {
+          text: 'Datos',
+          disabled: true,
+        },
+        {
+          text: 'Ordenadores',
+          disabled: true,
+        },
+      ],
       options: {
         title: {
-          text: '某站点用户访问来源',
-          subtext: '纯属虚构',
+          text: 'Ordenadores por proyecto',
           left: 'center',
         },
         tooltip: {
           trigger: 'item',
-          formatter: '{a} <br/>{b} : {c} ({d}%)',
+          formatter: '{b} ({c}): <strong>{d}%</strong>',
         },
         legend: {
           orient: 'vertical',
           left: 'left',
-          data: ['直接访问', '邮件营销', '联盟广告', '视频广告', '搜索引擎'],
         },
         series: [
           {
-            name: '访问来源',
             type: 'pie',
-            radius: '55%',
+            radius: ['30%', '65%'],
             center: ['50%', '60%'],
-            data: [
-              { value: 335, name: '直接访问' },
-              { value: 310, name: '邮件营销' },
-              { value: 234, name: '联盟广告' },
-              { value: 135, name: '视频广告' },
-              { value: 1548, name: '搜索引擎' },
-            ],
+            data: [],
             emphasis: {
               itemStyle: {
                 shadowBlur: 10,
@@ -60,11 +71,14 @@ export default {
       await this.$axios
         .$get('/api/v1/token/stats/computers/projects/')
         .then((response) => {
-          this.options.series[0].data = response.data
+          this.options.series[0].data = response
         })
         .catch((error) => {
           console.log(error)
         })
+    },
+    goTo(params) {
+      console.log(params)
     },
   },
 }
