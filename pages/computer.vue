@@ -4,17 +4,37 @@
 
     <h2 class="display-2">Ordenadores</h2>
 
-    <v-chart :options="options" @click="goTo" />
+    <PieChart
+      title="Ordenadores por proyecto"
+      :data="pieData"
+      @getLink="goTo"
+    />
+
+    <NestedPieChart
+      title="Ordenadores productivos"
+      :data="nestedPieData"
+      @getLink="goTo"
+    />
+
+    <StackedBarChart
+      title="Nuevos ordenadores / mes"
+      :data="barData"
+      @getLink="goTo"
+    />
   </v-container>
 </template>
 
 <script>
-import 'echarts/lib/chart/pie'
-import 'echarts/lib/component/title'
-import 'echarts/lib/component/legend'
-import 'echarts/lib/component/tooltip'
+import PieChart from '@/components/chart/Pie'
+import NestedPieChart from '@/components/chart/NestedPie'
+import StackedBarChart from '@/components/chart/StackedBar'
 
 export default {
+  components: {
+    PieChart,
+    NestedPieChart,
+    StackedBarChart,
+  },
   data() {
     return {
       breadcrumbs: [
@@ -32,35 +52,9 @@ export default {
           disabled: true,
         },
       ],
-      options: {
-        title: {
-          text: 'Ordenadores por proyecto',
-          left: 'center',
-        },
-        tooltip: {
-          trigger: 'item',
-          formatter: '{b} ({c}): <strong>{d}%</strong>',
-        },
-        legend: {
-          orient: 'vertical',
-          left: 'left',
-        },
-        series: [
-          {
-            type: 'pie',
-            radius: ['30%', '65%'],
-            center: ['50%', '60%'],
-            data: [],
-            emphasis: {
-              itemStyle: {
-                shadowBlur: 10,
-                shadowOffsetX: 0,
-                shadowColor: 'rgba(0, 0, 0, 0.5)',
-              },
-            },
-          },
-        ],
-      },
+      pieData: [],
+      nestedPieData: {},
+      barData: {},
     }
   },
   mounted() {
@@ -71,7 +65,38 @@ export default {
       await this.$axios
         .$get('/api/v1/token/stats/computers/projects/')
         .then((response) => {
-          this.options.series[0].data = response
+          this.pieData = response
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+
+      await this.$axios
+        .$get('/api/v1/token/stats/computers/productive/platform/')
+        .then((response) => {
+          this.nestedPieData = { inner: response.inner, outer: response.outer }
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+
+      await this.$axios
+        .$get('/api/v1/token/stats/computers/new/month/')
+        .then((response) => {
+          const series = []
+
+          Object.entries(response.data).map(([key, val]) => {
+            series.push({
+              type: 'line',
+              smooth: true,
+              name: key,
+              data: val,
+            })
+          })
+          this.barData = {
+            xData: response.x_labels,
+            series,
+          }
         })
         .catch((error) => {
           console.log(error)
