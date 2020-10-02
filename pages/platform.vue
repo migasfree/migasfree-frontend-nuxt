@@ -179,7 +179,10 @@ export default {
           this.rows = response.results
         })
         .catch((error) => {
-          console.log(error)
+          this.$store.dispatch('snackbar/setSnackbar', {
+            color: 'error',
+            text: error.response.data,
+          })
         })
     },
   },
