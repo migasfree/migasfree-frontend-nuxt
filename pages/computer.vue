@@ -57,51 +57,48 @@ export default {
       barData: {},
     }
   },
-  mounted() {
-    this.loadItems()
+  async fetch() {
+    await this.$axios
+      .$get('/api/v1/token/stats/computers/projects/')
+      .then((response) => {
+        this.pieData = response
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+    await this.$axios
+      .$get('/api/v1/token/stats/computers/productive/platform/')
+      .then((response) => {
+        this.nestedPieData = { inner: response.inner, outer: response.outer }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+    await this.$axios
+      .$get('/api/v1/token/stats/computers/new/month/')
+      .then((response) => {
+        const series = []
+
+        Object.entries(response.data).map(([key, val]) => {
+          series.push({
+            type: 'line',
+            smooth: true,
+            name: key,
+            data: val,
+          })
+        })
+        this.barData = {
+          xData: response.x_labels,
+          series,
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
   },
   methods: {
-    async loadItems() {
-      await this.$axios
-        .$get('/api/v1/token/stats/computers/projects/')
-        .then((response) => {
-          this.pieData = response
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-
-      await this.$axios
-        .$get('/api/v1/token/stats/computers/productive/platform/')
-        .then((response) => {
-          this.nestedPieData = { inner: response.inner, outer: response.outer }
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-
-      await this.$axios
-        .$get('/api/v1/token/stats/computers/new/month/')
-        .then((response) => {
-          const series = []
-
-          Object.entries(response.data).map(([key, val]) => {
-            series.push({
-              type: 'line',
-              smooth: true,
-              name: key,
-              data: val,
-            })
-          })
-          this.barData = {
-            xData: response.x_labels,
-            series,
-          }
-        })
-        .catch((error) => {
-          console.log(error)
-        })
-    },
     goTo(params) {
       console.log(params)
     },

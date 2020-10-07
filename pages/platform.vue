@@ -119,8 +119,21 @@ export default {
       },
     }
   },
-  mounted() {
-    this.loadItems()
+  async fetch() {
+    const url = '/api/v1/token/platforms/?' + this.paramsToQueryString()
+
+    await this.$axios
+      .$get(url)
+      .then((response) => {
+        this.totalRecords = response.count
+        this.rows = response.results
+      })
+      .catch((error) => {
+        this.$store.dispatch('snackbar/setSnackbar', {
+          color: 'error',
+          text: error.response.data,
+        })
+      })
   },
   methods: {
     updateParams(newProps) {
@@ -129,12 +142,12 @@ export default {
 
     onPageChange(params) {
       this.updateParams({ page: params.currentPage })
-      this.loadItems()
+      this.$fetch()
     },
 
     onPerPageChange(params) {
       this.updateParams({ perPage: params.currentPerPage })
-      this.loadItems()
+      this.$fetch()
     },
 
     onSortChange(params) {
@@ -144,12 +157,12 @@ export default {
           field: params[0].field.split('.')[0],
         },
       })
-      this.loadItems()
+      this.$fetch()
     },
 
     onColumnFilter(params) {
       this.updateParams(params)
-      this.loadItems()
+      this.$fetch()
     },
 
     paramsToQueryString() {
@@ -167,23 +180,6 @@ export default {
       }
 
       return ret
-    },
-
-    async loadItems() {
-      const url = '/api/v1/token/platforms/?' + this.paramsToQueryString()
-
-      await this.$axios
-        .$get(url)
-        .then((response) => {
-          this.totalRecords = response.count
-          this.rows = response.results
-        })
-        .catch((error) => {
-          this.$store.dispatch('snackbar/setSnackbar', {
-            color: 'error',
-            text: error.response.data,
-          })
-        })
     },
   },
 }
