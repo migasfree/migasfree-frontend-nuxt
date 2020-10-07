@@ -9,6 +9,7 @@
         <vue-good-table
           :columns="columns"
           :rows="rows"
+          ref="myTable"
           mode="remote"
           compact-mode
           :total-rows="totalRecords"
@@ -57,6 +58,7 @@
             >
           </div>
         </vue-good-table>
+        <v-btn text @click="resetFilters">Reset filters</v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -117,6 +119,12 @@ export default {
         page: 1,
         perPage: 100,
       },
+    }
+  },
+  created() {
+    if (this.$route.query.name) {
+      this.updateParams({ columnFilters: { name: this.$route.query.name } })
+      this.columns[1].filterOptions.filterValue = this.$route.query.name
     }
   },
   async fetch() {
@@ -180,6 +188,12 @@ export default {
       }
 
       return ret
+    },
+
+    resetFilters() {
+      this.$refs.myTable.reset()
+      this.updateParams({ columnFilters: {} })
+      this.$fetch()
     },
   },
 }
