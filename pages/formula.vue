@@ -67,6 +67,19 @@ import CrudHeading from '@/components/CrudHeading'
 
 export default {
   components: { CrudHeading },
+  async fetch() {
+    const url = '/api/v1/token/formulas/?' + this.paramsToQueryString()
+
+    await this.$axios
+      .$get(url)
+      .then((response) => {
+        this.totalRecords = response.count
+        this.rows = response.results
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  },
   data() {
     return {
       breadcrumbs: [
@@ -147,19 +160,6 @@ export default {
         perPage: 100,
       },
     }
-  },
-  async fetch() {
-    const url = '/api/v1/token/formulas/?' + this.paramsToQueryString()
-
-    await this.$axios
-      .$get(url)
-      .then((response) => {
-        this.totalRecords = response.count
-        this.rows = response.results
-      })
-      .catch((error) => {
-        console.log(error)
-      })
   },
   methods: {
     updateParams(newProps) {

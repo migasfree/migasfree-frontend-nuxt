@@ -7,9 +7,9 @@
     <v-row>
       <v-col cols="12">
         <vue-good-table
+          ref="myTable"
           :columns="columns"
           :rows="rows"
-          ref="myTable"
           mode="remote"
           compact-mode
           :total-rows="totalRecords"
@@ -71,6 +71,22 @@ export default {
   components: {
     CrudHeading,
   },
+  async fetch() {
+    const url = '/api/v1/token/platforms/?' + this.paramsToQueryString()
+
+    await this.$axios
+      .$get(url)
+      .then((response) => {
+        this.totalRecords = response.count
+        this.rows = response.results
+      })
+      .catch((error) => {
+        this.$store.dispatch('snackbar/setSnackbar', {
+          color: 'error',
+          text: error.response.data,
+        })
+      })
+  },
   data() {
     return {
       breadcrumbs: [
@@ -126,22 +142,6 @@ export default {
       this.updateParams({ columnFilters: { name: this.$route.query.name } })
       this.columns[1].filterOptions.filterValue = this.$route.query.name
     }
-  },
-  async fetch() {
-    const url = '/api/v1/token/platforms/?' + this.paramsToQueryString()
-
-    await this.$axios
-      .$get(url)
-      .then((response) => {
-        this.totalRecords = response.count
-        this.rows = response.results
-      })
-      .catch((error) => {
-        this.$store.dispatch('snackbar/setSnackbar', {
-          color: 'error',
-          text: error.response.data,
-        })
-      })
   },
   methods: {
     updateParams(newProps) {
