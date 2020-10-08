@@ -41,10 +41,10 @@
         >
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'actions'">
-              <v-btn x-small color="primary"
+              <v-btn fab x-small color="primary" @click="edit(props.row.id)"
                 ><v-icon small>mdi-pencil</v-icon></v-btn
               >
-              <v-btn x-small color="error"
+              <v-btn fab x-small color="error" @click="remove(props.row.id)"
                 ><v-icon small>mdi-delete</v-icon></v-btn
               >
             </span>
@@ -54,9 +54,6 @@
           </template>
           <div slot="emptystate">{{ $t('vgt.noData') }}</div>
           <div slot="selected-row-actions">
-            <v-btn x-small color="primary"
-              ><v-icon small>mdi-pencil</v-icon></v-btn
-            >
             <v-btn x-small color="error"
               ><v-icon small>mdi-delete</v-icon></v-btn
             >
@@ -114,6 +111,10 @@ export default {
       ],
       isLoading: false,
       columns: [
+        {
+          field: 'id',
+          hidden: true,
+        },
         {
           label: 'Actions',
           field: 'actions',
@@ -244,6 +245,14 @@ export default {
       this.$refs.myTable.reset()
       this.updateParams({ columnFilters: {} })
       this.$fetch()
+    },
+
+    edit(id) {
+      console.log(id)
+    },
+
+    remove(id) {
+      console.log(id)
     },
   },
 }
