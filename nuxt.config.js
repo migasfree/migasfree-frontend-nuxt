@@ -100,6 +100,11 @@ export default {
     strategy: 'no_prefix',
     lazy: true,
     langDir: 'i18n/',
+    detectBrowserLanguage: {
+      alwaysRedirect: true,
+      fallbackLocale: 'en',
+    },
+    defaultLocale: 'en',
   },
   auth: {
     strategies: {
