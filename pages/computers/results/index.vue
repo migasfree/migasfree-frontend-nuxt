@@ -2,7 +2,11 @@
   <v-container>
     <v-breadcrumbs large :items="breadcrumbs"></v-breadcrumbs>
 
-    <CrudHeading title="Ordenadores" :results="totalRecords" />
+    <CrudHeading
+      title="Ordenadores"
+      :results="totalRecords"
+      :has-add-button="false"
+    />
 
     <v-row>
       <v-col cols="12">
