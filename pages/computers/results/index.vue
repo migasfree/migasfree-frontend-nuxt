@@ -38,6 +38,7 @@
           @on-sort-change="onSortChange"
           @on-column-filter="onColumnFilter"
           @on-per-page-change="onPerPageChange"
+          @on-selected-rows-change="onSelectionChanged"
         >
           <template slot="table-row" slot-scope="props">
             <span v-if="props.column.field == 'actions'">
@@ -222,6 +223,10 @@ export default {
     onColumnFilter(params) {
       this.updateParams(params)
       this.$fetch()
+    },
+
+    onSelectionChanged(params) {
+      console.log(params)
     },
 
     paramsToQueryString() {
