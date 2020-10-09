@@ -17,6 +17,7 @@
     "echarts": "^4.9.0",
     "nuxt": "^2.14.0",
     "nuxt-i18n": "^6.13.1",
+    "typeface-dosis": "^1.1.13",
     "typeface-roboto": "^0.0.75",
     "vue-echarts": "^5.0.0-beta.0",
     "vue-good-table": "^2.21.0"
