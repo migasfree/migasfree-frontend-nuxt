@@ -39,7 +39,7 @@ export default {
   /*
    ** Global CSS
    */
-  css: ['typeface-roboto/index.css'],
+  css: ['typeface-roboto/index.css', 'typeface-dosis/index.css'],
   /*
    ** Plugins to load before mounting the App
    ** https://nuxtjs.org/guide/plugins
