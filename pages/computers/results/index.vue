@@ -197,6 +197,11 @@ export default {
           label: 'User',
           field: 'sync_user.name',
           html: true,
+          filterOptions: {
+            enabled: true,
+            placeholder: this.$t('vgt.filter'),
+            trigger: 'enter',
+          },
         },
         {
           label: 'Sync end Date',
@@ -276,7 +281,7 @@ export default {
         ret +=
           '&' +
           Object.entries(this.serverParams.columnFilters)
-            .map(([key, val]) => `${key}__icontains=${val}`)
+            .map(([key, val]) => `${key.replace('.', '__')}__icontains=${val}`)
             .join('&')
       }
       if (this.serverParams.sort.field) {
