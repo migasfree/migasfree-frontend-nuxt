@@ -49,6 +49,35 @@
                 ><v-icon small>mdi-delete</v-icon></v-btn
               >
             </span>
+            <span v-else-if="props.column.field == 'name'">
+              <MigasLink
+                model="computer"
+                :pk="props.row.id"
+                icon="mdi-heart-pulse"
+                :value="props.row.name"
+              />
+            </span>
+            <span v-else-if="props.column.field == 'project.name'">
+              <MigasLink
+                model="project"
+                :pk="props.row.project.id"
+                :value="props.row.project.name"
+              />
+            </span>
+            <span v-else-if="props.column.field == 'sync_user.name'">
+              <MigasLink
+                model="user"
+                :pk="props.row.sync_user.id"
+                :value="props.row.sync_user.name"
+              />
+            </span>
+            <span v-else-if="props.column.field == 'product'">
+              <MigasLink
+                model="computer"
+                :pk="props.row.id"
+                :value="props.row.product"
+              />
+            </span>
             <span v-else>
               {{ props.formattedRow[props.column.field] }}
             </span>
@@ -68,10 +97,12 @@
 
 <script>
 import CrudHeading from '@/components/CrudHeading'
+import MigasLink from '@/components/MigasLink'
 
 export default {
   components: {
     CrudHeading,
+    MigasLink,
   },
   async fetch() {
     const url = '/api/v1/token/computers/?' + this.paramsToQueryString()
@@ -103,7 +134,8 @@ export default {
         },
         {
           text: 'Ordenadores',
-          disabled: true,
+          disabled: false,
+          href: '/computers',
         },
         {
           text: 'Resultados',
@@ -144,6 +176,10 @@ export default {
           },
         },
         {
+          field: 'project.id',
+          hidden: true,
+        },
+        {
           label: 'Project',
           field: 'project.name',
           html: true,
@@ -152,6 +188,10 @@ export default {
             placeholder: this.$t('vgt.filter'),
             trigger: 'enter',
           },
+        },
+        {
+          field: 'sync_user.id',
+          hidden: true,
         },
         {
           label: 'User',
