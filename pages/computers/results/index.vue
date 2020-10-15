@@ -53,29 +53,32 @@
               <MigasLink
                 model="computer"
                 :pk="props.row.id"
-                icon="mdi-heart-pulse"
-                :value="props.row.name"
+                :icon="computerIcon(props.row.status)"
+                :value="props.row.name || ''"
               />
+            </span>
+            <span v-else-if="props.column.field == 'status'">
+              {{ statusChoices[props.row.status] || '' }}
             </span>
             <span v-else-if="props.column.field == 'project.name'">
               <MigasLink
                 model="project"
                 :pk="props.row.project.id"
-                :value="props.row.project.name"
+                :value="props.row.project.name || ''"
               />
             </span>
             <span v-else-if="props.column.field == 'sync_user.name'">
               <MigasLink
                 model="user"
                 :pk="props.row.sync_user.id"
-                :value="props.row.sync_user.name"
+                :value="props.row.sync_user.name || ''"
               />
             </span>
             <span v-else-if="props.column.field == 'product'">
               <MigasLink
                 model="computer"
                 :pk="props.row.id"
-                :value="props.row.product"
+                :value="props.row.product || ''"
               />
             </span>
             <span v-else>
@@ -105,20 +108,8 @@ export default {
     MigasLink,
   },
   async fetch() {
-    const url = '/api/v1/token/computers/?' + this.paramsToQueryString()
-
-    await this.$axios
-      .$get(url)
-      .then((response) => {
-        this.totalRecords = response.count
-        this.rows = response.results
-      })
-      .catch((error) => {
-        this.$store.dispatch('snackbar/setSnackbar', {
-          color: 'error',
-          text: error.response.data,
-        })
-      })
+    await this.loadFilters()
+    await this.loadItems()
   },
   data() {
     return {
@@ -171,7 +162,7 @@ export default {
           html: false,
           filterOptions: {
             enabled: true,
-            placeholder: this.$t('vgt.filter'),
+            placeholder: this.$t('vgt.all'),
             trigger: 'enter',
           },
         },
@@ -185,7 +176,7 @@ export default {
           html: true,
           filterOptions: {
             enabled: true,
-            placeholder: this.$t('vgt.filter'),
+            placeholder: this.$t('vgt.all'),
             trigger: 'enter',
           },
         },
@@ -232,12 +223,13 @@ export default {
         page: 1,
         perPage: 100,
       },
+      statusChoices: {},
     }
   },
   created() {
     if (this.$route.query.name) {
       this.updateParams({ columnFilters: { name: this.$route.query.name } })
-      this.columns[1].filterOptions.filterValue = this.$route.query.name
+      this.columns[2].filterOptions.filterValue = this.$route.query.name
     }
   },
   methods: {
@@ -247,12 +239,12 @@ export default {
 
     onPageChange(params) {
       this.updateParams({ page: params.currentPage })
-      this.$fetch()
+      this.loadItems()
     },
 
     onPerPageChange(params) {
       this.updateParams({ perPage: params.currentPerPage })
-      this.$fetch()
+      this.loadItems()
     },
 
     onSortChange(params) {
@@ -262,12 +254,12 @@ export default {
           field: params[0].field.split('.')[0],
         },
       })
-      this.$fetch()
+      this.loadItems()
     },
 
     onColumnFilter(params) {
       this.updateParams(params)
-      this.$fetch()
+      this.loadItems()
     },
 
     onSelectionChanged(params) {
@@ -281,7 +273,11 @@ export default {
         ret +=
           '&' +
           Object.entries(this.serverParams.columnFilters)
-            .map(([key, val]) => `${key.replace('.', '__')}__icontains=${val}`)
+            .map(([key, val]) => {
+              if (key === 'project.name') return `project__id=${val}`
+              else if (key === 'status') return `status=${val}`
+              else return `${key.replace('.', '__')}__icontains=${val}`
+            })
             .join('&')
       }
       if (this.serverParams.sort.field) {
@@ -291,10 +287,63 @@ export default {
       return ret
     },
 
+    async loadFilters() {
+      await this.$axios
+        .$get('/api/v1/token/projects/')
+        .then((response) => {
+          this.columns[5].filterOptions.filterDropdownItems = response.results.map(
+            (item) => {
+              return {
+                value: item.id,
+                text: item.name,
+              }
+            }
+          )
+        })
+        .catch((error) => {
+          this.$store.dispatch('snackbar/setSnackbar', {
+            color: 'error',
+            text: error.response.data,
+          })
+        })
+
+      await this.$axios
+        .$get('/api/v1/token/computers/status/')
+        .then((response) => {
+          this.statusChoices = response.choices
+          this.columns[3].filterOptions.filterDropdownItems = Object.keys(
+            response.choices
+          ).map((key) => {
+            return { value: key, text: response.choices[key] }
+          })
+        })
+        .catch((error) => {
+          this.$store.dispatch('snackbar/setSnackbar', {
+            color: 'error',
+            text: error.response.data,
+          })
+        })
+    },
+
+    async loadItems() {
+      await this.$axios
+        .$get('/api/v1/token/computers/?' + this.paramsToQueryString())
+        .then((response) => {
+          this.totalRecords = response.count
+          this.rows = response.results
+        })
+        .catch((error) => {
+          this.$store.dispatch('snackbar/setSnackbar', {
+            color: 'error',
+            text: error.response.data,
+          })
+        })
+    },
+
     resetFilters() {
       this.$refs.myTable.reset()
       this.updateParams({ columnFilters: {} })
-      this.$fetch()
+      this.loadItems()
     },
 
     edit(id) {
@@ -303,6 +352,23 @@ export default {
 
     remove(id) {
       console.log(id)
+    },
+
+    computerIcon(status) {
+      switch (status) {
+        case 'intended':
+          return 'mdi-heart-pulse'
+        case 'available':
+          return 'mdi-cart'
+        case 'in repair':
+          return 'mdi-wrench'
+        case 'reserved':
+          return 'mdi-lock-alert'
+        case 'unknown':
+          return 'mdi-crosshairs-question'
+        case 'unsubscribed':
+          return 'mdi-recycle-variant'
+      }
     },
   },
 }
