@@ -278,7 +278,7 @@ export default {
       statusChoices: {},
       tableFilters: {
         platform: {
-          items: [{ id: 0, name: 'Todas' }],
+          items: [{ id: '', name: 'Todas' }],
           selected: {},
         },
         machine: {
@@ -291,8 +291,8 @@ export default {
         },
         syncEndDate: {
           items: [
-            { id: 0, name: 'Todas' },
-            { id: 1, name: 'sin fecha' },
+            { id: '', name: 'Todas' },
+            { id: 0, name: 'sin fecha' },
             { id: 7, name: 'hace 7 días' },
             { id: 30, name: 'hace 30 días' },
             { id: 60, name: 'hace 60 días' },
@@ -398,7 +398,7 @@ export default {
                 case 'machine':
                   return `${key}=${val}`
                 case 'sync_end_date':
-                  if (val === 1) return `${key}__isnull=true`
+                  if (val === 0) return `${key}__isnull=true`
                   else {
                     let d = new Date()
                     d = d.toISOString(d.setDate(d.getDate() - val))
