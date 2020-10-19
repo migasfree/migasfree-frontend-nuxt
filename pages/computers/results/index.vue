@@ -9,6 +9,59 @@
     />
 
     <v-row>
+      <v-col cols="12" sm="4">
+        <v-select
+          prepend-icon="mdi-filter"
+          :items="tableFilters.platform.items"
+          label="Por plataforma"
+          dense
+          outlined
+          item-text="name"
+          item-value="id"
+          return-object
+          v-model="tableFilters.platform.selected"
+          @change="onPlatformFilter"
+        ></v-select>
+      </v-col>
+
+      <v-col cols="12" sm="4">
+        <v-select
+          prepend-icon="mdi-filter"
+          :items="tableFilters.machine.items"
+          label="Por máquina"
+          dense
+          outlined
+          item-text="name"
+          item-value="id"
+          return-object
+          v-model="tableFilters.machine.selected"
+          @change="onMachineFilter"
+        ></v-select>
+      </v-col>
+
+      <v-col cols="12" sm="4">
+        <v-select
+          prepend-icon="mdi-filter"
+          :items="tableFilters.syncEndDate.items"
+          label="Por fecha de última sincronización"
+          dense
+          outlined
+          item-text="name"
+          item-value="id"
+          return-object
+          v-model="tableFilters.syncEndDate.selected"
+          @change="onSyncEndDateFilter"
+        ></v-select>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12">
+        <v-btn text @click="resetFilters">Reset filters</v-btn>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <v-col cols="12">
         <vue-good-table
           ref="myTable"
@@ -92,7 +145,6 @@
             >
           </div>
         </vue-good-table>
-        <v-btn text @click="resetFilters">Reset filters</v-btn>
       </v-col>
     </v-row>
   </v-container>
@@ -224,6 +276,32 @@ export default {
         perPage: 100,
       },
       statusChoices: {},
+      tableFilters: {
+        platform: {
+          items: [{ id: 0, name: 'Todas' }],
+          selected: {},
+        },
+        machine: {
+          items: [
+            { id: '', name: 'Todas' },
+            { id: 'P', name: 'Físicas' },
+            { id: 'V', name: 'Virtuales' },
+          ],
+          selected: {},
+        },
+        syncEndDate: {
+          items: [
+            { id: 0, name: 'Todas' },
+            { id: 1, name: 'sin fecha' },
+            { id: 7, name: 'hace 7 días' },
+            { id: 30, name: 'hace 30 días' },
+            { id: 60, name: 'hace 60 días' },
+            { id: 180, name: 'hace 180 días' },
+            { id: 365, name: 'hacer 365 días' },
+          ],
+          selected: {},
+        },
+      },
     }
   },
   created() {
@@ -231,10 +309,19 @@ export default {
       this.updateParams({ columnFilters: { name: this.$route.query.name } })
       this.columns[2].filterOptions.filterValue = this.$route.query.name
     }
+
+    if (this.$route.query.project_id) {
+      this.updateParams({
+        columnFilters: { 'project.name': this.$route.query.project_id },
+      })
+      this.columns[5].filterOptions.filterValue = this.$route.query.project_id
+    }
   },
   methods: {
     updateParams(newProps) {
+      console.log('serverParams before', this.serverParams)
       this.serverParams = Object.assign({}, this.serverParams, newProps)
+      console.log('serverParams after', this.serverParams)
     },
 
     onPageChange(params) {
@@ -258,12 +345,41 @@ export default {
     },
 
     onColumnFilter(params) {
+      console.log(params)
       this.updateParams(params)
       this.loadItems()
     },
 
     onSelectionChanged(params) {
       console.log(params)
+    },
+
+    onPlatformFilter(params) {
+      console.log(params)
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          platform: params.id,
+        }),
+      })
+      this.loadItems()
+    },
+
+    onMachineFilter(params) {
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          machine: params.id,
+        }),
+      })
+      this.loadItems()
+    },
+
+    onSyncEndDateFilter(params) {
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          sync_end_date: params.id,
+        }),
+      })
+      this.loadItems()
     },
 
     paramsToQueryString() {
@@ -274,9 +390,23 @@ export default {
           '&' +
           Object.entries(this.serverParams.columnFilters)
             .map(([key, val]) => {
-              if (key === 'project.name') return `project__id=${val}`
-              else if (key === 'status') return `status=${val}`
-              else return `${key.replace('.', '__')}__icontains=${val}`
+              switch (key) {
+                case 'project.name':
+                  return `project__id=${val}`
+                case 'status':
+                case 'platform':
+                case 'machine':
+                  return `${key}=${val}`
+                case 'sync_end_date':
+                  if (val === 1) return `${key}__isnull=true`
+                  else {
+                    let d = new Date()
+                    d = d.toISOString(d.setDate(d.getDate() - val))
+                    return `${key}__lt=${d}`
+                  }
+                default:
+                  return `${key.replace('.', '__')}__icontains=${val}`
+              }
             })
             .join('&')
       }
@@ -284,10 +414,26 @@ export default {
         ret += `&ordering=${this.serverParams.sort.type}${this.serverParams.sort.field}`
       }
 
+      console.log(ret)
       return ret
     },
 
     async loadFilters() {
+      await this.$axios
+        .$get('/api/v1/token/platforms/')
+        .then((response) => {
+          console.log(response.results)
+          this.tableFilters.platform.items = this.tableFilters.platform.items.concat(
+            response.results
+          )
+        })
+        .catch((error) => {
+          this.$store.dispatch('snackbar/setSnackbar', {
+            color: 'error',
+            text: error.response.data,
+          })
+        })
+
       await this.$axios
         .$get('/api/v1/token/projects/')
         .then((response) => {
@@ -343,6 +489,9 @@ export default {
     resetFilters() {
       this.$refs.myTable.reset()
       this.updateParams({ columnFilters: {} })
+      this.tableFilters.platform.selected = {}
+      this.tableFilters.machine.selected = {}
+      this.tableFilters.syncEndDate.selected = {}
       this.loadItems()
     },
 
