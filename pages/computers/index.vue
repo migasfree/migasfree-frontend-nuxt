@@ -100,7 +100,11 @@ export default {
   },
   methods: {
     goTo(params) {
+      const url = 'computers/results/?'
       console.log(params)
+      if (params.data.project_id) {
+        this.$router.push(url + `project_id=${params.data.project_id}`)
+      }
     },
   },
 }
