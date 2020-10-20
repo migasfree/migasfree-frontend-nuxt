@@ -9,7 +9,7 @@
     />
 
     <v-row>
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="3">
         <v-select
           v-model="tableFilters.platform.selected"
           prepend-icon="mdi-filter"
@@ -24,7 +24,7 @@
         ></v-select>
       </v-col>
 
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="3">
         <v-select
           v-model="tableFilters.machine.selected"
           prepend-icon="mdi-filter"
@@ -39,7 +39,7 @@
         ></v-select>
       </v-col>
 
-      <v-col cols="12" sm="4">
+      <v-col cols="12" sm="3">
         <v-select
           v-model="tableFilters.syncEndDate.selected"
           prepend-icon="mdi-filter"
@@ -53,11 +53,26 @@
           @change="onSyncEndDateFilter"
         ></v-select>
       </v-col>
+
+      <v-col cols="12" sm="3">
+        <v-select
+          v-model="tableFilters.softwareInventory.selected"
+          prepend-icon="mdi-filter"
+          :items="tableFilters.softwareInventory.items"
+          label="Por inventario de software"
+          dense
+          outlined
+          item-text="name"
+          item-value="id"
+          return-object
+          @change="onSoftwareInventoryFilter"
+        ></v-select>
+      </v-col>
     </v-row>
 
     <v-row>
       <v-col cols="12">
-        <v-btn text @click="resetFilters">Reset filters</v-btn>
+        <v-btn text @click="resetFilters">Reset all filters</v-btn>
       </v-col>
     </v-row>
 
@@ -301,6 +316,13 @@ export default {
           ],
           selected: {},
         },
+        softwareInventory: {
+          items: [
+            { id: '', name: 'Todos' },
+            { id: 0, name: 'sin inventario' },
+          ],
+          selected: {},
+        },
       },
     }
   },
@@ -382,6 +404,15 @@ export default {
       this.loadItems()
     },
 
+    onSoftwareInventoryFilter(params) {
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          has_software_inventory: params.id === 0 ? false : '',
+        }),
+      })
+      this.loadItems()
+    },
+
     paramsToQueryString() {
       let ret = `page_size=${this.serverParams.perPage}&page=${this.serverParams.page}`
 
@@ -396,6 +427,7 @@ export default {
                 case 'status':
                 case 'platform':
                 case 'machine':
+                case 'has_software_inventory':
                   return `${key}=${val}`
                 case 'sync_end_date':
                   if (val === 0) return `${key}__isnull=true`
