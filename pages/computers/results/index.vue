@@ -11,6 +11,7 @@
     <v-row>
       <v-col cols="12" sm="4">
         <v-select
+          v-model="tableFilters.platform.selected"
           prepend-icon="mdi-filter"
           :items="tableFilters.platform.items"
           label="Por plataforma"
@@ -19,13 +20,13 @@
           item-text="name"
           item-value="id"
           return-object
-          v-model="tableFilters.platform.selected"
           @change="onPlatformFilter"
         ></v-select>
       </v-col>
 
       <v-col cols="12" sm="4">
         <v-select
+          v-model="tableFilters.machine.selected"
           prepend-icon="mdi-filter"
           :items="tableFilters.machine.items"
           label="Por máquina"
@@ -34,13 +35,13 @@
           item-text="name"
           item-value="id"
           return-object
-          v-model="tableFilters.machine.selected"
           @change="onMachineFilter"
         ></v-select>
       </v-col>
 
       <v-col cols="12" sm="4">
         <v-select
+          v-model="tableFilters.syncEndDate.selected"
           prepend-icon="mdi-filter"
           :items="tableFilters.syncEndDate.items"
           label="Por fecha de última sincronización"
@@ -49,7 +50,6 @@
           item-text="name"
           item-value="id"
           return-object
-          v-model="tableFilters.syncEndDate.selected"
           @change="onSyncEndDateFilter"
         ></v-select>
       </v-col>
