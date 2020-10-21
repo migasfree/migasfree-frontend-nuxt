@@ -9,7 +9,7 @@
     />
 
     <v-row>
-      <v-col cols="12" sm="3">
+      <v-col cols="12" sm="4">
         <v-select
           v-model="tableFilters.platform.selected"
           prepend-icon="mdi-filter"
@@ -24,7 +24,7 @@
         ></v-select>
       </v-col>
 
-      <v-col cols="12" sm="3">
+      <v-col cols="12" sm="4">
         <v-select
           v-model="tableFilters.machine.selected"
           prepend-icon="mdi-filter"
@@ -39,7 +39,7 @@
         ></v-select>
       </v-col>
 
-      <v-col cols="12" sm="3">
+      <v-col cols="12" sm="4">
         <v-select
           v-model="tableFilters.syncEndDate.selected"
           prepend-icon="mdi-filter"
@@ -53,8 +53,10 @@
           @change="onSyncEndDateFilter"
         ></v-select>
       </v-col>
+    </v-row>
 
-      <v-col cols="12" sm="3">
+    <v-row>
+      <v-col cols="12" sm="6">
         <v-select
           v-model="tableFilters.softwareInventory.selected"
           prepend-icon="mdi-filter"
@@ -67,6 +69,21 @@
           return-object
           @change="onSoftwareInventoryFilter"
         ></v-select>
+      </v-col>
+
+      <v-col cols="1" sm="1">
+        <v-icon right>mdi-filter</v-icon>
+      </v-col>
+      <v-col cols="11" sm="5"
+        ><treeselect
+          v-model="tableFilters.statusIn.selected"
+          :options="tableFilters.statusIn.items"
+          :close-on-select="true"
+          :clearable="false"
+          placeholder="Por estado"
+          @select="onStatusInFilter"
+        >
+        </treeselect>
       </v-col>
     </v-row>
 
@@ -168,11 +185,14 @@
 <script>
 import CrudHeading from '@/components/CrudHeading'
 import MigasLink from '@/components/MigasLink'
+import Treeselect from '@riophae/vue-treeselect'
+import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 
 export default {
   components: {
     CrudHeading,
     MigasLink,
+    Treeselect,
   },
   async fetch() {
     await this.loadFilters()
@@ -323,6 +343,10 @@ export default {
           ],
           selected: {},
         },
+        statusIn: {
+          items: [],
+          selected: null,
+        },
       },
     }
   },
@@ -413,6 +437,47 @@ export default {
       this.loadItems()
     },
 
+    onStatusInFilter(params) {
+      console.log(params)
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          status_in: params.id,
+        }),
+      })
+      this.loadItems()
+    },
+
+    updateStatusInFilter(options) {
+      const choices = options.choices
+
+      this.tableFilters.statusIn.items = [
+        { id: '', label: 'Todos' },
+        {
+          id: options.subscribed.join(','),
+          label: 'subscribed',
+          children: [
+            {
+              id: options.productive.join(','),
+              label: 'productive',
+              children: Object.entries(options.productive).map(([key, val]) => {
+                return { id: val, label: choices[val] }
+              }),
+            },
+            {
+              id: options.unproductive.join(','),
+              label: 'unproductive',
+              children: Object.entries(options.unproductive).map(
+                ([key, val]) => {
+                  return { id: val, label: choices[val] }
+                }
+              ),
+            },
+          ],
+        },
+        { id: options.unsubscribed.join(','), label: 'unsubscribed' },
+      ]
+    },
+
     paramsToQueryString() {
       let ret = `page_size=${this.serverParams.perPage}&page=${this.serverParams.page}`
 
@@ -429,6 +494,8 @@ export default {
                 case 'machine':
                 case 'has_software_inventory':
                   return `${key}=${val}`
+                case 'status_in':
+                  return `status__in=${val}`
                 case 'sync_end_date':
                   if (val === 0) return `${key}__isnull=true`
                   else {
@@ -494,6 +561,7 @@ export default {
           ).map((key) => {
             return { value: key, text: response.choices[key] }
           })
+          this.updateStatusInFilter(response)
         })
         .catch((error) => {
           this.$store.dispatch('snackbar/setSnackbar', {
@@ -524,6 +592,7 @@ export default {
       this.tableFilters.platform.selected = {}
       this.tableFilters.machine.selected = {}
       this.tableFilters.syncEndDate.selected = {}
+      this.tableFilters.statusIn.selected = null
       this.loadItems()
     },
 
