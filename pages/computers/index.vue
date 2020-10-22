@@ -2,7 +2,28 @@
   <v-container>
     <v-breadcrumbs large :items="breadcrumbs"></v-breadcrumbs>
 
-    <h2 class="display-2">Ordenadores</h2>
+    <v-row>
+      <v-col cols="12">
+        <h2 class="display-2">Ordenadores</h2>
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="4" sm="4">
+        <v-text-field
+          label="Buscar..."
+          v-model="searchText"
+          clearable
+          @keydown.enter="search"
+        >
+          <template slot="append">
+            <v-btn icon color="primary" @click="search">
+              <v-icon left>mdi-text-search</v-icon>
+            </v-btn>
+          </template>
+        </v-text-field>
+      </v-col>
+    </v-row>
 
     <PieChart
       title="Ordenadores por proyecto"
@@ -96,15 +117,20 @@ export default {
       pieData: [],
       nestedPieData: {},
       barData: {},
+      searchText: '',
+      url: 'computers/results/?',
     }
   },
   methods: {
     goTo(params) {
-      const url = 'computers/results/?'
       console.log(params)
       if (params.data.project_id) {
-        this.$router.push(url + `project_id=${params.data.project_id}`)
+        this.$router.push(this.url + `project_id=${params.data.project_id}`)
       }
+    },
+
+    search() {
+      this.$router.push(this.url + `search=${this.searchText}`)
     },
   },
 }
