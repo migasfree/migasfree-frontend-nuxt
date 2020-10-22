@@ -40,6 +40,7 @@ export default {
     options: {
       animation: false,
       tooltip: {
+        show: true,
         trigger: 'axis',
       },
       legend: {
@@ -62,6 +63,7 @@ export default {
   watch: {
     data: function (val, oldVal) {
       this.options.series = val.series
+      this.options.xAxis.data = val.xData
     },
   },
   beforeMount() {
