@@ -5,7 +5,7 @@ export default {
    ** Nuxt rendering mode
    ** See https://nuxtjs.org/api/configuration-mode
    */
-  mode: 'spa',
+  ssr: false,
   server: {
     port: 3001,
     host: '0.0.0.0',
