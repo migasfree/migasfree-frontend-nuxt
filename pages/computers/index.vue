@@ -25,23 +25,33 @@
       </v-col>
     </v-row>
 
-    <PieChart
-      title="Ordenadores por proyecto"
-      :data="pieData"
-      @getLink="goTo"
-    />
+    <v-row>
+      <v-col cols="6" sm="6">
+        <PieChart
+          title="Ordenadores por proyecto"
+          :data="pieData"
+          @getLink="goTo"
+        />
+      </v-col>
 
-    <NestedPieChart
-      title="Ordenadores productivos"
-      :data="nestedPieData"
-      @getLink="goTo"
-    />
+      <v-col cols="6" sm="6">
+        <NestedPieChart
+          title="Ordenadores productivos"
+          :data="nestedPieData"
+          @getLink="goTo"
+        />
+      </v-col>
+    </v-row>
 
-    <StackedBarChart
-      title="Nuevos ordenadores / mes"
-      :data="barData"
-      @getLink="goTo"
-    />
+    <v-row>
+      <v-col cols="12" sm="12">
+        <StackedBarChart
+          title="Nuevos ordenadores / mes"
+          :data="barData"
+          @getLink="goTo"
+        />
+      </v-col>
+    </v-row>
   </v-container>
 </template>
 
