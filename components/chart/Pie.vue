@@ -1,11 +1,31 @@
 <template>
-  <v-chart :options="options" @click="passData" />
+  <v-card>
+    <v-card-title>{{ title }}</v-card-title>
+    <v-card-text>
+      <v-chart
+        ref="chart"
+        :init-options="initOptions"
+        :options="options"
+        @click="passData"
+        autoresize
+      />
+    </v-card-text>
+  </v-card>
 </template>
+
+<style scoped>
+.v-card__text {
+  width: 100%;
+  height: 400px;
+}
+.echarts {
+  width: 100%;
+  height: 100%;
+}
+</style>
 
 <script>
 import 'echarts/lib/chart/pie'
-import 'echarts/lib/component/title'
-import 'echarts/lib/component/legend'
 import 'echarts/lib/component/tooltip'
 
 export default {
@@ -15,19 +35,14 @@ export default {
     data: { type: Array, required: true },
   },
   data: () => ({
+    initOptions: {
+      renderer: 'svg',
+    },
     options: {
       animation: false,
-      title: {
-        text: '',
-        left: 'center',
-      },
       tooltip: {
         trigger: 'item',
         formatter: '{b} ({c}): <strong>{d}%</strong>',
-      },
-      legend: {
-        orient: 'vertical',
-        left: 'left',
       },
       series: [
         {
@@ -51,12 +66,20 @@ export default {
       this.options.series[0].data = val
     },
   },
-  mounted() {
-    this.options.title.text = this.title
+  beforeMount() {
+    window.addEventListener('resize', this.windowResize)
+  },
+  beforeDestroy() {
+    window.removeEventListener('resize', this.windowResize)
   },
   methods: {
     passData(params) {
       this.$emit('getLink', params)
+    },
+    windowResize() {
+      if (this.$refs.chart !== null && this.$refs.chart !== undefined) {
+        this.$refs.chart.resize()
+      }
     },
   },
 }
