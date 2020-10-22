@@ -88,6 +88,24 @@
     </v-row>
 
     <v-row>
+      <v-col cols="4" sm="4">
+        <v-text-field
+          label="Buscar..."
+          v-model="tableFilters.search"
+          clearable
+          @keydown.enter="onSearch"
+          @click:clear="onSearchClear"
+        >
+          <template slot="append">
+            <v-btn icon color="primary" @click="onSearch">
+              <v-icon left>mdi-text-search</v-icon>
+            </v-btn>
+          </template>
+        </v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <v-col cols="12">
         <v-btn text @click="resetFilters">Reset all filters</v-btn>
       </v-col>
@@ -108,7 +126,7 @@
           :pagination-options="{
             enabled: true,
             mode: 'records',
-            perPage: 100,
+            perPage: serverParams.perPage,
             perPageDropdown: [50, 100, 150],
             dropdownAllowAll: false,
             nextLabel: $t('vgt.next'),
@@ -117,6 +135,11 @@
             ofLabel: $t('vgt.of'),
             pageLabel: $t('vgt.page'), // for 'pages' mode
             allLabel: $t('vgt.all'),
+          }"
+          :search-options="{
+            enabled: true,
+            skipDiacritics: true,
+            externalQuery: tableFilters.search,
           }"
           style-class="vgt-table striped condensed"
           @on-page-change="onPageChange"
@@ -312,6 +335,7 @@ export default {
       },
       statusChoices: {},
       tableFilters: {
+        search: '',
         platform: {
           items: [{ id: '', name: 'Todas' }],
           selected: {},
@@ -361,6 +385,13 @@ export default {
         columnFilters: { 'project.name': this.$route.query.project_id },
       })
       this.columns[5].filterOptions.filterValue = this.$route.query.project_id
+    }
+
+    if (this.$route.query.search) {
+      this.updateParams({
+        columnFilters: { search: this.$route.query.search },
+      })
+      this.tableFilters.search = this.$route.query.search
     }
   },
   methods: {
@@ -478,6 +509,19 @@ export default {
       ]
     },
 
+    onSearch() {
+      console.log(this.tableFilters.search)
+      this.updateParams({
+        columnFilters: { search: this.tableFilters.search },
+      })
+      this.loadItems()
+    },
+
+    onSearchClear() {
+      this.tableFilters.search = ''
+      this.onSearch()
+    },
+
     paramsToQueryString() {
       let ret = `page_size=${this.serverParams.perPage}&page=${this.serverParams.page}`
 
@@ -493,6 +537,7 @@ export default {
                 case 'platform':
                 case 'machine':
                 case 'has_software_inventory':
+                case 'search':
                   return `${key}=${val}`
                 case 'status_in':
                   return `status__in=${val}`
@@ -593,6 +638,7 @@ export default {
       this.tableFilters.machine.selected = {}
       this.tableFilters.syncEndDate.selected = {}
       this.tableFilters.statusIn.selected = null
+      this.tableFilters.search = ''
       this.loadItems()
     },
 
