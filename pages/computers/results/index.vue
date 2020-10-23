@@ -394,6 +394,13 @@ export default {
       })
       this.tableFilters.search = this.$route.query.search
     }
+
+    if (this.$route.query.status_in) {
+      this.updateParams({
+        columnFilters: { status_in: this.$route.query.status_in },
+      })
+      this.tableFilters.statusIn.selected = this.$route.query.status_in
+    }
   },
   methods: {
     updateParams(newProps) {
