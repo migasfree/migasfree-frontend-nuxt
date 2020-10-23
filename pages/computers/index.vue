@@ -11,9 +11,10 @@
     <v-row>
       <v-col cols="4" sm="4">
         <v-text-field
-          label="Buscar..."
           v-model="searchText"
+          label="Buscar..."
           clearable
+          autofocus
           @keydown.enter="search"
         >
           <template slot="append">
@@ -79,7 +80,7 @@ export default {
     await this.$axios
       .$get('/api/v1/token/stats/computers/productive/platform/')
       .then((response) => {
-        this.nestedPieData = { inner: response.inner, outer: response.outer }
+        this.nestedPieData = response
       })
       .catch((error) => {
         console.log(error)
