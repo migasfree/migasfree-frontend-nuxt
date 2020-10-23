@@ -31,6 +31,7 @@
         <PieChart
           title="Ordenadores por proyecto"
           :data="pieData"
+          :url="byProjectUrl"
           @getLink="goTo"
         />
       </v-col>
@@ -39,6 +40,7 @@
         <NestedPieChart
           title="Ordenadores productivos"
           :data="nestedPieData"
+          :url="productiveUrl"
           @getLink="goTo"
         />
       </v-col>
@@ -48,7 +50,17 @@
       <v-col cols="12" sm="12">
         <StackedBarChart
           title="Nuevos ordenadores / mes"
-          :data="barData"
+          :data="newMonthData"
+          @getLink="goTo"
+        />
+      </v-col>
+    </v-row>
+
+    <v-row>
+      <v-col cols="12" sm="12">
+        <StackedBarChart
+          title="Ordenadores físicos que entran al sistema por año"
+          :data="entryYearData"
           @getLink="goTo"
         />
       </v-col>
@@ -99,7 +111,29 @@ export default {
             data: val,
           })
         })
-        this.barData = {
+        this.newMonthData = {
+          xData: response.x_labels,
+          series,
+        }
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+
+    await this.$axios
+      .$get('/api/v1/token/stats/computers/entry/year/')
+      .then((response) => {
+        const series = []
+
+        Object.entries(response.data).map(([key, val]) => {
+          series.push({
+            type: 'line',
+            smooth: true,
+            name: key,
+            data: val,
+          })
+        })
+        this.entryYearData = {
           xData: response.x_labels,
           series,
         }
@@ -125,12 +159,21 @@ export default {
           disabled: true,
         },
       ],
-      pieData: [],
+      pieData: {},
       nestedPieData: {},
-      barData: {},
+      newMonthData: {},
+      entryYearData: {},
       searchText: '',
       url: 'computers/results/?',
     }
+  },
+  computed: {
+    byProjectUrl() {
+      return `${this.url}status_in=intended,reserved,unknown` // FIXME
+    },
+    productiveUrl() {
+      return `${this.url}status_in=intended,reserved,unknown`
+    },
   },
   methods: {
     goTo(params) {
