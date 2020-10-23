@@ -1,13 +1,17 @@
 <template>
   <v-card>
-    <v-card-title>{{ title }}</v-card-title>
+    <v-card-title>
+      {{ title }}
+      <v-spacer />
+      <v-chip label color="info" @click="passData">{{ data.total }}</v-chip>
+    </v-card-title>
     <v-card-text>
       <v-chart
         ref="chart"
         :init-options="initOptions"
         :options="options"
-        @click="passData"
         autoresize
+        @click="passData"
       />
     </v-card-text>
   </v-card>
@@ -36,7 +40,7 @@ export default {
       type: Object,
       required: true,
       default() {
-        return { inner: [], outer: [] }
+        return { inner: [], outer: [], total: 0 }
       },
     },
   },
