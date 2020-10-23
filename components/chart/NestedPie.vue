@@ -3,7 +3,7 @@
     <v-card-title>
       {{ title }}
       <v-spacer />
-      <v-chip label color="info" @click="passData">{{ data.total }}</v-chip>
+      <v-chip label color="info" @click="goTo">{{ data.total }}</v-chip>
     </v-card-title>
     <v-card-text>
       <v-chart
@@ -43,6 +43,7 @@ export default {
         return { inner: [], outer: [], total: 0 }
       },
     },
+    url: { type: String, required: false, default: '' },
   },
   data: () => ({
     initOptions: {
@@ -102,6 +103,11 @@ export default {
     windowResize() {
       if (this.$refs.chart !== null && this.$refs.chart !== undefined) {
         this.$refs.chart.resize()
+      }
+    },
+    goTo() {
+      if (this.url) {
+        this.$router.push(this.url)
       }
     },
   },
