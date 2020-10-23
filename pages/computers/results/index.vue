@@ -90,9 +90,10 @@
     <v-row>
       <v-col cols="4" sm="4">
         <v-text-field
-          label="Buscar..."
           v-model="tableFilters.search"
+          label="Buscar..."
           clearable
+          autofocus
           @keydown.enter="onSearch"
           @click:clear="onSearchClear"
         >
