@@ -1,6 +1,10 @@
 <template>
   <v-card>
-    <v-card-title>{{ title }}</v-card-title>
+    <v-card-title>
+      {{ title }}
+      <v-spacer />
+      <v-chip label color="info" @click="goTo">{{ data.total }}</v-chip>
+    </v-card-title>
     <v-card-text>
       <v-chart
         ref="chart"
@@ -32,7 +36,14 @@ export default {
   name: 'PieChart',
   props: {
     title: { type: String, required: true },
-    data: { type: Array, required: true },
+    data: {
+      type: Object,
+      required: true,
+      default() {
+        return { data: [], total: 0 }
+      },
+    },
+    url: { type: String, required: false, default: '' },
   },
   data: () => ({
     initOptions: {
@@ -63,7 +74,7 @@ export default {
   }),
   watch: {
     data: function (val, oldVal) {
-      this.options.series[0].data = val
+      this.options.series[0].data = val.data
     },
   },
   beforeMount() {
@@ -79,6 +90,11 @@ export default {
     windowResize() {
       if (this.$refs.chart !== null && this.$refs.chart !== undefined) {
         this.$refs.chart.resize()
+      }
+    },
+    goTo() {
+      if (this.url) {
+        this.$router.push(this.url)
       }
     },
   },
