@@ -9,6 +9,25 @@
     />
 
     <v-row>
+      <v-col cols="4" sm="4">
+        <v-text-field
+          v-model="tableFilters.search"
+          label="Buscar..."
+          clearable
+          autofocus
+          @keydown.enter="onSearch"
+          @click:clear="onSearchClear"
+        >
+          <template slot="append">
+            <v-btn icon color="primary" @click="onSearch">
+              <v-icon left>mdi-text-search</v-icon>
+            </v-btn>
+          </template>
+        </v-text-field>
+      </v-col>
+    </v-row>
+
+    <v-row>
       <v-col cols="12" sm="4">
         <v-select
           v-model="tableFilters.platform.selected"
@@ -88,21 +107,46 @@
     </v-row>
 
     <v-row>
-      <v-col cols="4" sm="4">
-        <v-text-field
-          v-model="tableFilters.search"
-          label="Buscar..."
-          clearable
-          autofocus
-          @keydown.enter="onSearch"
-          @click:clear="onSearchClear"
+      <v-col cols="12" sm="6" md="4">
+        <v-menu
+          ref="menu"
+          v-model="tableFilters.createdAt.menu"
+          :close-on-content-click="false"
+          :return-value.sync="tableFilters.createdAt.selected"
+          transition="scale-transition"
+          offset-y
+          min-width="290px"
         >
-          <template slot="append">
-            <v-btn icon color="primary" @click="onSearch">
-              <v-icon left>mdi-text-search</v-icon>
-            </v-btn>
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="tableFilters.createdAt.view"
+              label="Por fecha de alta (rango)"
+              prepend-icon="mdi-filter"
+              readonly
+              outlined
+              v-bind="attrs"
+              v-on="on"
+            ></v-text-field>
           </template>
-        </v-text-field>
+          <v-date-picker
+            v-model="tableFilters.createdAt.selected"
+            range
+            no-title
+            scrollable
+            :first-day-of-week="1"
+            locale="es-es"
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="tableFilters.createdAt.menu = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn text color="primary" @click="onCreatedAtFilter"> OK </v-btn>
+          </v-date-picker>
+        </v-menu>
       </v-col>
     </v-row>
 
@@ -372,6 +416,11 @@ export default {
           items: [],
           selected: null,
         },
+        createdAt: {
+          selected: [],
+          view: '',
+          menu: false,
+        },
       },
     }
   },
@@ -400,6 +449,22 @@ export default {
         columnFilters: { status_in: this.$route.query.status_in },
       })
       this.tableFilters.statusIn.selected = this.$route.query.status_in
+    }
+
+    if (this.$route.query.created_at__gte && this.$route.query.created_at__lt) {
+      this.updateParams({
+        columnFilters: {
+          created_at__gte: this.$route.query.created_at__gte,
+          created_at__lt: this.$route.query.created_at__lt,
+        },
+      })
+      this.tableFilters.createdAt.selected = [
+        this.$route.query.created_at__gte,
+        this.$route.query.created_at__lt,
+      ]
+      this.tableFilters.createdAt.view = this.tableFilters.createdAt.selected.join(
+        ' ~ '
+      )
     }
   },
   methods: {
@@ -517,6 +582,20 @@ export default {
       ]
     },
 
+    onCreatedAtFilter() {
+      this.$refs.menu.save(this.tableFilters.createdAt.selected)
+      this.tableFilters.createdAt.view = this.tableFilters.createdAt.selected.join(
+        ' ~ '
+      )
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          created_at__gte: this.tableFilters.createdAt.selected[0],
+          created_at__lt: this.tableFilters.createdAt.selected[1],
+        }),
+      })
+      this.loadItems()
+    },
+
     onSearch() {
       console.log(this.tableFilters.search)
       this.updateParams({
@@ -546,6 +625,8 @@ export default {
                 case 'machine':
                 case 'has_software_inventory':
                 case 'search':
+                case 'created_at__gte':
+                case 'created_at__lt':
                   return `${key}=${val}`
                 case 'status_in':
                   return `status__in=${val}`
@@ -646,6 +727,8 @@ export default {
       this.tableFilters.machine.selected = {}
       this.tableFilters.syncEndDate.selected = {}
       this.tableFilters.statusIn.selected = null
+      this.tableFilters.createdAt.selected = []
+      this.tableFilters.createdAt.view = ''
       this.tableFilters.search = ''
       this.loadItems()
     },
