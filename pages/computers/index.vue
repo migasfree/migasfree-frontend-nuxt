@@ -181,6 +181,17 @@ export default {
       if (params.data.project_id) {
         this.$router.push(this.url + `project_id=${params.data.project_id}`)
       }
+
+      if (params.data.created_at__lt) {
+        let url =
+          this.url +
+          `created_at__gte=${params.data.created_at__gte}` +
+          `&created_at__lt=${params.data.created_at__lt}`
+        if (params.data.project__id__exact) {
+          url += `&project_id=${params.data.project__id__exact}`
+        }
+        this.$router.push(url)
+      }
     },
 
     search() {
