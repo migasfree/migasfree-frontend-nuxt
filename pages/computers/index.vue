@@ -190,6 +190,9 @@ export default {
         if (params.data.project__id__exact) {
           url += `&project_id=${params.data.project__id__exact}`
         }
+        if (params.data.machine) {
+          url += `&machine=${params.data.machine}`
+        }
         this.$router.push(url)
       }
     },
