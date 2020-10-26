@@ -437,6 +437,13 @@ export default {
       this.columns[5].filterOptions.filterValue = this.$route.query.project_id
     }
 
+    if (this.$route.query.machine) {
+      this.updateParams({
+        columnFilters: { machine: this.$route.query.machine },
+      })
+      this.tableFilters.machine.selected = this.$route.query.machine
+    }
+
     if (this.$route.query.search) {
       this.updateParams({
         columnFilters: { search: this.$route.query.search },
