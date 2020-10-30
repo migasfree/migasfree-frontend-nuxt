@@ -207,7 +207,7 @@
                 model="computer"
                 :pk="props.row.id"
                 :icon="computerIcon(props.row.status)"
-                :value="props.row.name || ''"
+                :value="props.row.__str__ || ''"
               />
             </span>
             <span v-else-if="props.column.field == 'status'">
@@ -365,6 +365,10 @@ export default {
             placeholder: this.$t('vgt.filter'),
             trigger: 'enter',
           },
+        },
+        {
+          field: '__str__',
+          hidden: true,
         },
       ],
       rows: [],
