@@ -69,7 +69,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" nuxt to="/platform"> Continue </v-btn>
+          <v-btn color="primary" nuxt to="/platforms"> Continue </v-btn>
         </v-card-actions>
       </v-card>
     </v-flex>

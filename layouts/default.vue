@@ -67,11 +67,11 @@
 </template>
 
 <script>
-import AppMenu from '@/components/AppMenu'
-import AlertMenu from '@/components/AlertMenu'
-import AppFooter from '@/components/AppFooter'
+import AppMenu from '@/components/ui/AppMenu'
+import AlertMenu from '@/components/ui/AlertMenu'
+import AppFooter from '@/components/ui/AppFooter'
 import UserAccountMenu from '@/components/UserAccountMenu'
-import Snackbar from '@/components/Snackbar'
+import Snackbar from '@/components/ui/Snackbar'
 
 export default {
   components: {

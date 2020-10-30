@@ -65,7 +65,7 @@
 </template>
 
 <script>
-import CrudHeading from '@/components/CrudHeading'
+import CrudHeading from '@/components/ui/CrudHeading'
 
 export default {
   components: {

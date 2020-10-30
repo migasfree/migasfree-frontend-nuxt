@@ -251,7 +251,7 @@
 </template>
 
 <script>
-import CrudHeading from '@/components/CrudHeading'
+import CrudHeading from '@/components/ui/CrudHeading'
 import MigasLink from '@/components/MigasLink'
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
