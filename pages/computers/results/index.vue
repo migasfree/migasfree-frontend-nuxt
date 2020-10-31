@@ -45,16 +45,16 @@
 
       <v-col cols="12" sm="4">
         <v-select
-          v-model="tableFilters.machine.selected"
+          v-model="tableFilters.architecture.selected"
           prepend-icon="mdi-filter"
-          :items="tableFilters.machine.items"
-          label="Por máquina"
+          :items="tableFilters.architecture.items"
+          label="Por arquitectura"
           dense
           outlined
           item-text="name"
           item-value="id"
           return-object
-          @change="onMachineFilter"
+          @change="onArchitectureFilter"
         ></v-select>
       </v-col>
 
@@ -101,8 +101,7 @@
           :clearable="false"
           placeholder="Por estado"
           @select="onStatusInFilter"
-        >
-        </treeselect>
+        />
       </v-col>
     </v-row>
 
@@ -123,6 +122,7 @@
               label="Por fecha de alta (rango)"
               prepend-icon="mdi-filter"
               readonly
+              dense
               outlined
               v-bind="attrs"
               v-on="on"
@@ -147,6 +147,62 @@
             <v-btn text color="primary" @click="onCreatedAtFilter"> OK </v-btn>
           </v-date-picker>
         </v-menu>
+      </v-col>
+
+      <v-col cols="12" sm="6" md="4">
+        <v-menu
+          ref="menuSync"
+          v-model="tableFilters.syncEndDateRange.menu"
+          :close-on-content-click="false"
+          :return-value.sync="tableFilters.syncEndDateRange.selected"
+          transition="scale-transition"
+          offset-y
+          min-width="290px"
+        >
+          <template v-slot:activator="{ on, attrs }">
+            <v-text-field
+              v-model="tableFilters.syncEndDateRange.view"
+              label="Por fecha de última sincronización (rango)"
+              prepend-icon="mdi-filter"
+              readonly
+              dense
+              outlined
+              v-bind="attrs"
+              v-on="on"
+            ></v-text-field>
+          </template>
+          <v-date-picker
+            v-model="tableFilters.syncEndDateRange.selected"
+            range
+            no-title
+            scrollable
+            :first-day-of-week="1"
+            locale="es-es"
+          >
+            <v-spacer></v-spacer>
+            <v-btn
+              text
+              color="primary"
+              @click="tableFilters.syncEndDateRange.menu = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn text color="primary" @click="onSyncEndDateRangeFilter">
+              OK
+            </v-btn>
+          </v-date-picker>
+        </v-menu>
+      </v-col>
+
+      <v-col cols="12" sm="6" md="4">
+        <treeselect
+          v-model="tableFilters.machine.selected"
+          :options="tableFilters.machine.items"
+          :close-on-select="true"
+          :clearable="false"
+          placeholder="Por máquina"
+          @select="onMachineFilter"
+        />
       </v-col>
     </v-row>
 
@@ -375,13 +431,35 @@ export default {
           items: [{ id: '', name: 'Todas' }],
           selected: {},
         },
-        machine: {
+        architecture: {
           items: [
             { id: '', name: 'Todas' },
-            { id: 'P', name: 'Físicas' },
-            { id: 'V', name: 'Virtuales' },
+            { id: 32, name: '32 bits' },
+            { id: 64, name: '64 bits' },
           ],
           selected: {},
+        },
+        machine: {
+          items: [
+            { id: '', label: 'Todas' },
+            {
+              id: 'P',
+              label: 'Físicas',
+              children: [
+                { id: 'desktop', label: 'desktop' },
+                { id: 'laptop', label: 'portátil' },
+              ],
+            },
+            {
+              id: 'V',
+              label: 'Virtuales',
+              children: [
+                { id: 'virtual', label: 'emulador' },
+                { id: 'docker', label: 'contenedor' },
+              ],
+            },
+          ],
+          selected: null,
         },
         syncEndDate: {
           items: [
@@ -408,6 +486,11 @@ export default {
           choices: {},
         },
         createdAt: {
+          selected: [],
+          view: '',
+          menu: false,
+        },
+        syncEndDateRange: {
           selected: [],
           view: '',
           menu: false,
@@ -503,7 +586,6 @@ export default {
     },
 
     onPlatformFilter(params) {
-      console.log(params)
       this.updateParams({
         columnFilters: Object.assign(this.serverParams.columnFilters, {
           platform: params.id,
@@ -512,12 +594,31 @@ export default {
       this.loadItems()
     },
 
-    onMachineFilter(params) {
+    onArchitectureFilter(params) {
       this.updateParams({
         columnFilters: Object.assign(this.serverParams.columnFilters, {
-          machine: params.id,
+          architecture: params.id,
         }),
       })
+      this.loadItems()
+    },
+
+    onMachineFilter(params) {
+      if (params.id === '' || params.id === 'P' || params.id === 'V') {
+        this.updateParams({
+          columnFilters: Object.assign(this.serverParams.columnFilters, {
+            machine: params.id,
+            product_system: '',
+          }),
+        })
+      } else {
+        this.updateParams({
+          columnFilters: Object.assign(this.serverParams.columnFilters, {
+            machine: '',
+            product_system: params.id,
+          }),
+        })
+      }
       this.loadItems()
     },
 
@@ -594,6 +695,22 @@ export default {
       this.loadItems()
     },
 
+    onSyncEndDateRangeFilter() {
+      this.$refs.menuSync.save(this.tableFilters.syncEndDateRange.selected)
+      this.tableFilters.syncEndDateRange.view = this.tableFilters.syncEndDateRange.selected.join(
+        ' ~ '
+      )
+      this.updateParams({
+        columnFilters: Object.assign(this.serverParams.columnFilters, {
+          sync_end_date__gte:
+            this.tableFilters.syncEndDateRange.selected[0] + 'T00:00:00',
+          sync_end_date__lt:
+            this.tableFilters.syncEndDateRange.selected[1] + 'T23:59:59',
+        }),
+      })
+      this.loadItems()
+    },
+
     onSearch() {
       console.log(this.tableFilters.search)
       this.updateParams({
@@ -619,11 +736,15 @@ export default {
                 case 'project.name':
                   return `project__id=${val}`
                 case 'platform':
+                case 'architecture':
                 case 'machine':
+                case 'product_system':
                 case 'has_software_inventory':
                 case 'search':
                 case 'created_at__gte':
                 case 'created_at__lt':
+                case 'sync_end_date__gte':
+                case 'sync_end_date__lt':
                   return `${key}=${val}`
                 case 'status_in':
                   return `status__in=${val}`
@@ -715,7 +836,7 @@ export default {
       this.$refs.myTable.reset()
       this.updateParams({ columnFilters: {} })
       this.tableFilters.platform.selected = {}
-      this.tableFilters.machine.selected = {}
+      this.tableFilters.architecture.selected = {}
       this.tableFilters.syncEndDate.selected = {}
       this.tableFilters.statusIn.selected = null
       this.tableFilters.createdAt.selected = []
