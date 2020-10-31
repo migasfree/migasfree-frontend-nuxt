@@ -210,9 +210,6 @@
                 :value="props.row.__str__ || ''"
               />
             </span>
-            <span v-else-if="props.column.field == 'status'">
-              {{ statusChoices[props.row.status] || '' }}
-            </span>
             <span v-else-if="props.column.field == 'project.name'">
               <MigasLink
                 model="project"
@@ -312,14 +309,8 @@ export default {
           },
         },
         {
-          label: 'Status',
-          field: 'status',
-          html: false,
-          filterOptions: {
-            enabled: true,
-            placeholder: this.$t('vgt.all'),
-            trigger: 'enter',
-          },
+          field: '__str__',
+          hidden: true,
         },
         {
           field: 'project.id',
@@ -366,10 +357,6 @@ export default {
             trigger: 'enter',
           },
         },
-        {
-          field: '__str__',
-          hidden: true,
-        },
       ],
       rows: [],
       totalRecords: 0,
@@ -382,7 +369,6 @@ export default {
         page: 1,
         perPage: 100,
       },
-      statusChoices: {},
       tableFilters: {
         search: '',
         platform: {
@@ -419,6 +405,7 @@ export default {
         statusIn: {
           items: [],
           selected: null,
+          choices: {},
         },
         createdAt: {
           selected: [],
@@ -563,7 +550,7 @@ export default {
     },
 
     updateStatusInFilter(options) {
-      const choices = options.choices
+      this.tableFilters.statusIn.choices = options.choices
 
       this.tableFilters.statusIn.items = [
         { id: '', label: 'Todos' },
@@ -575,7 +562,7 @@ export default {
               id: options.productive.join(','),
               label: 'productive',
               children: Object.entries(options.productive).map(([key, val]) => {
-                return { id: val, label: choices[val] }
+                return { id: val, label: options.choices[val] }
               }),
             },
             {
@@ -583,7 +570,7 @@ export default {
               label: 'unproductive',
               children: Object.entries(options.unproductive).map(
                 ([key, val]) => {
-                  return { id: val, label: choices[val] }
+                  return { id: val, label: options.choices[val] }
                 }
               ),
             },
@@ -631,7 +618,6 @@ export default {
               switch (key) {
                 case 'project.name':
                   return `project__id=${val}`
-                case 'status':
                 case 'platform':
                 case 'machine':
                 case 'has_software_inventory':
@@ -700,12 +686,6 @@ export default {
       await this.$axios
         .$get('/api/v1/token/computers/status/')
         .then((response) => {
-          this.statusChoices = response.choices
-          this.columns[3].filterOptions.filterDropdownItems = Object.keys(
-            response.choices
-          ).map((key) => {
-            return { value: key, text: response.choices[key] }
-          })
           this.updateStatusInFilter(response)
         })
         .catch((error) => {
