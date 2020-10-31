@@ -841,6 +841,8 @@ export default {
       this.tableFilters.statusIn.selected = null
       this.tableFilters.createdAt.selected = []
       this.tableFilters.createdAt.view = ''
+      this.tableFilters.syncEndDateRange.selected = []
+      this.tableFilters.syncEndDateRange.view = ''
       this.tableFilters.search = ''
       this.loadItems()
     },
