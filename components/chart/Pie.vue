@@ -10,8 +10,8 @@
         ref="chart"
         :init-options="initOptions"
         :options="options"
-        @click="passData"
         autoresize
+        @click="passData"
       />
     </v-card-text>
   </v-card>
